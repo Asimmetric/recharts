@@ -30,12 +30,16 @@ export const getComposedData = (chartProps, type, xAxis, yAxis, dataKey,
   const yTicks = getTicksOfAxis(yAxis);
 
   const data = [];
+  let prevYPointWasNull = false
   for (var i = startIndex; i <= endIndex; i++) {
     const dataPoint = chartProps.data[i];
-    const yDataPoint = i === endIndex && type === 'stepAfter' ? chartProps.data[i - 1] : chartProps.data[i];
+    const yDataPoint = i === endIndex && (type === 'stepAfter' || prevYPointWasNull)
+      ? chartProps.data[i - 1] : chartProps.data[i];
     const yPoint = regionValue !== null ? regionValue : _.get(yDataPoint, dataKey, null);
+    prevYPointWasNull = yPoint === null
     const value = _.get(dataPoint, dataKey, null)
     const hasNullEndValue = type === 'linear' && value === null && i === endIndex;
+    const bottomOfGraph = yAxis.scale && yAxis.scale.range && yAxis.scale.range() && yAxis.scale.range()[0]
 
     if (!hasNullEndValue) {
       data.push({
@@ -43,9 +47,10 @@ export const getComposedData = (chartProps, type, xAxis, yAxis, dataKey,
           xTicks[i].coordinate + bandSize / 2 :
           xAxis.scale(_.get(dataPoint, dataKey, null)),
         y: layout === 'horizontal' ?
-          yAxis.scale(yPoint) :
+          yPoint === null ? bottomOfGraph : yAxis.scale(yPoint) :
           yTicks[i].coordinate + bandSize / 2,
         value: value,
+        nullVals: yPoint === null
       });
     }
   }
@@ -136,7 +141,10 @@ const findDataSegmentsByRegion = (lineProps, data, dataKey) => {
       if (previousRegionValue !== null) {
         const stroke = findStroke(lineProps, currentRegion, dataSegments.length, previousItem);
         dataSegments.push({ start, end: i, regionValue: previousRegionValue, stroke });
+      } else {
+        dataSegments.push({ start, end: i, regionValue: previousRegionValue, stroke: null });
       }
+
       currentRegion = dataSegment;
       const regionValue = findRegionValue(lineProps, currentRegion, dataItem);
       start = i;
@@ -150,6 +158,8 @@ const findDataSegmentsByRegion = (lineProps, data, dataKey) => {
   if (finalRegionVal !== null) {
     const finalStroke = findStroke(lineProps, currentRegion, dataSegments.length, data[data.length - 1]);
     dataSegments.push({start, end: data.length - 1, regionValue: finalRegionVal, stroke: finalStroke});
+  } else {
+    dataSegments.push({start, end: data.length - 1, regionValue: finalRegionVal, stroke: null});
   }
   return dataSegments;
 };
@@ -164,12 +174,16 @@ const findDataSegmentsNormal = (lineProps, data, dataKey) => {
     const dataItem = _.get(data[i], dataKey, null);
     if (i === 0) {
       previousDataItem = dataItem;
-    } else if ((dataItem === null && previousDataItem !== null) || (i === (data.length - 1) && previousDataItem !== null)) {
+    } else if (i === (data.length - 1)) {
+      dataSegments.push({ start, end: i, stroke: previousDataItem !== null ? stroke : null });
+    } else if (dataItem === null && previousDataItem !== null) { // end of line with values
       dataSegments.push({ start, end: i, stroke });
       previousDataItem = null;
-    } else if (dataItem !== null && previousDataItem === null) {
       start = i;
-      previousDataItem = dataItem
+    } else if (dataItem !== null && previousDataItem === null) { // end of line without values
+      dataSegments.push({ start, end: i, stroke: null });
+      previousDataItem = dataItem;
+      start = i;
     }
   }
   return dataSegments;
@@ -233,6 +247,8 @@ const findDataSegmentsByThreshold = (lineProps, data, dataKey) => {
       if (!isSame) {
         if (previousDataItem !== null) {
           dataSegments.push({ start, end: i, stroke: thresholdColor(currentThreshold) });
+        } else {
+          dataSegments.push({ start, end: i, stroke: null });
         }
 
         // New Segment
@@ -247,6 +263,12 @@ const findDataSegmentsByThreshold = (lineProps, data, dataKey) => {
       start,
       end: data.length - 1,
       stroke: thresholdColor(currentThreshold),
+    });
+  } else {
+    dataSegments.push({
+      start,
+      end: data.length - 1,
+      stroke: null,
     });
   }
   return dataSegments;
