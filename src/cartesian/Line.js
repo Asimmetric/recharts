@@ -69,6 +69,7 @@ class Line extends Component {
     ]),
 
     // MultiLine
+    dotRadius: PropTypes.number,
     isMultiline: PropTypes.bool,
     strokeArray: PropTypes.arrayOf(PropTypes.string),
     // MultiLine by Region
@@ -94,6 +95,7 @@ class Line extends Component {
     legendType: 'line',
     stroke: '#3182bd',
     strokeWidth: 1,
+    dotRadius: 1,
     fill: '#fff',
     points: [],
     isAnimationActive: true,
@@ -266,9 +268,11 @@ class Line extends Component {
     const dots = points.map((entry, i) => {
       const dotProps = {
         key: `dot-${i}`,
-        r: 3,
+        r: 1,
         ...lineProps,
         ...customDotProps,
+        strokeWidth: 0,
+        fill: lineProps && lineProps.stroke || '#383838',
         cx: entry.x, cy: entry.y, index: i, payload: entry,
       };
 
@@ -343,7 +347,7 @@ class Line extends Component {
     return (
       <Layer className={layerClass}>
         {!hasSinglePoint && this.renderCurve()}
-        {(hasSinglePoint && dot) && this.renderDots()}
+        {(hasSinglePoint || dot) && this.renderDots()}
         {label && this.renderLabels()}
       </Layer>
     );

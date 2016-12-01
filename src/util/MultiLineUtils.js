@@ -30,29 +30,26 @@ export const getComposedData = (chartProps, type, xAxis, yAxis, dataKey,
   const yTicks = getTicksOfAxis(yAxis);
 
   const data = [];
-  let prevYPointWasNull = false
   for (var i = startIndex; i <= endIndex; i++) {
     const dataPoint = chartProps.data[i];
-    const yDataPoint = i === endIndex && (type === 'stepAfter' || prevYPointWasNull)
-      ? chartProps.data[i - 1] : chartProps.data[i];
-    const yPoint = regionValue !== null ? regionValue : _.get(yDataPoint, dataKey, null);
-    prevYPointWasNull = yPoint === null
     const value = _.get(dataPoint, dataKey, null)
-    const hasNullEndValue = type === 'linear' && value === null && i === endIndex;
+    const extend = i === endIndex && (type === 'stepAfter' || value === null)
+    const yDataPoint = extend ? chartProps.data[i - 1] : chartProps.data[i];
+
+    const prevYPointWasNull = i === startIndex ||  _.get(chartProps.data[i - 1], dataKey, null) === null
+    const yPoint = regionValue !== null ? regionValue : _.get(yDataPoint, dataKey, null);
     const bottomOfGraph = yAxis.scale && yAxis.scale.range && yAxis.scale.range() && yAxis.scale.range()[0]
 
-    if (!hasNullEndValue) {
-      data.push({
-        x: layout === 'horizontal' ?
-          xTicks[i].coordinate + bandSize / 2 :
-          xAxis.scale(_.get(dataPoint, dataKey, null)),
-        y: layout === 'horizontal' ?
-          yPoint === null ? bottomOfGraph : yAxis.scale(yPoint) :
-          yTicks[i].coordinate + bandSize / 2,
-        value: value,
-        nullVals: yPoint === null
-      });
-    }
+    data.push({
+      x: layout === 'horizontal' ?
+        xTicks[i].coordinate + bandSize / 2 :
+        xAxis.scale(_.get(dataPoint, dataKey, null)),
+      y: layout === 'horizontal' ?
+        yPoint === null || (i === endIndex && prevYPointWasNull) ? bottomOfGraph : yAxis.scale(yPoint) :
+        yTicks[i].coordinate + bandSize / 2,
+      value: value,
+      nullVals: yPoint === null
+    });
   }
   return data;
 };
@@ -227,6 +224,7 @@ const findDataSegmentsByThreshold = (lineProps, data, dataKey) => {
   let start = 0;
   const thresholdKey = lineProps.thresholdKey || dataKey;
   let previousDataItem = null;
+  let twoItemsAgoWasNull = true;
 
   for (var i = 0; i < data.length; i++) {
     const currItem = data[i];
@@ -246,14 +244,21 @@ const findDataSegmentsByThreshold = (lineProps, data, dataKey) => {
       }
       if (!isSame) {
         if (previousDataItem !== null) {
-          dataSegments.push({ start, end: i, stroke: thresholdColor(currentThreshold) });
+          // Is a value Line
+          dataSegments.push({
+            start,
+            end: i,
+            stroke: thresholdColor(currentThreshold)
+          });
         } else {
-          dataSegments.push({ start, end: i, stroke: null });
+          // Is a null Line
+          dataSegments.push({ start, end: i, stroke: null});
         }
 
         // New Segment
         start = i;
         currentThreshold = findThreshold(thresholds, dataItem);
+        twoItemsAgoWasNull = previousDataItem === null;
         previousDataItem = dataItem;
       }
     }
@@ -262,13 +267,13 @@ const findDataSegmentsByThreshold = (lineProps, data, dataKey) => {
     dataSegments.push({
       start,
       end: data.length - 1,
-      stroke: thresholdColor(currentThreshold),
+      stroke: thresholdColor(currentThreshold)
     });
   } else {
     dataSegments.push({
       start,
       end: data.length - 1,
-      stroke: null,
+      stroke: null
     });
   }
   return dataSegments;
@@ -302,11 +307,11 @@ const findDataSegments = (lineProps, data, dataKey) => {
  */
 export const renderMultiLine = (chartProps, child, xAxisMap, yAxisMap, offset, i) => {
   const { data, layout } = chartProps; // Parent (LineChart) props
-  const { xAxisId, yAxisId, dataKey, type } = child.props;
+  const { xAxisId, yAxisId, dataKey, type, dotRadius } = child.props;
 
   const dataSegments = findDataSegments(child.props, data, dataKey);
 
-  return dataSegments.map((segment, l) => {
+  const lineItems = dataSegments.map((segment, l) => {
     const { start, end, stroke, regionValue } = segment;
 
     const points = getComposedData(chartProps, type, xAxisMap[xAxisId],
@@ -320,4 +325,6 @@ export const renderMultiLine = (chartProps, child, xAxisMap, yAxisMap, offset, i
       stroke,
     });
   }, this);
+
+  return lineItems;
 };
