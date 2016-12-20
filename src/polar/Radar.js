@@ -8,7 +8,7 @@ import { PRESENTATION_ATTRIBUTES, getPresentationAttributes } from '../util/Reac
 import Polygon from '../shape/Polygon';
 import Dot from '../shape/Dot';
 import Layer from '../container/Layer';
-import Animate from '../lib/reactSmooth';
+import Animate from '../libraries/reactSmooth';
 import _ from 'lodash';
 
 @pureRender

@@ -9,7 +9,7 @@ import { PRESENTATION_ATTRIBUTES, getPresentationAttributes,
   filterEventsOfChild } from '../util/ReactUtils';
 import Curve from '../shape/Curve';
 import Symbols from '../shape/Symbols';
-import Animate from '../lib/reactSmooth';
+import Animate from '../libraries/reactSmooth';
 import _ from 'lodash';
 import AnimationDecorator from '../util/AnimationDecorator';
 

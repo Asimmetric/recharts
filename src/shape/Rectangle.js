@@ -5,7 +5,7 @@ import React, { Component, PropTypes } from 'react';
 import pureRender from '../util/PureRender';
 import classNames from 'classnames';
 import { findDOMNode } from 'react-dom';
-import Smooth from '../lib/reactSmooth';
+import Smooth from '../libraries/reactSmooth';
 import { PRESENTATION_ATTRIBUTES, getPresentationAttributes,
   filterEventAttributes } from '../util/ReactUtils';
 

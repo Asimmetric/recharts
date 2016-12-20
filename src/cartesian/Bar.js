@@ -3,7 +3,7 @@
  */
 import React, { Component, PropTypes, Children } from 'react';
 import classNames from 'classnames';
-import Animate from '../lib/reactSmooth';
+import Animate from '../libraries/reactSmooth';
 import Rectangle from '../shape/Rectangle';
 import Layer from '../container/Layer';
 import pureRender from '../util/PureRender';
