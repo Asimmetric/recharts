@@ -186,15 +186,15 @@ export const calculateDomainOfTicks = (ticks, type) => {
  */
 export const getDomainOfDataByKey = (data, key, type) => {
   if (type === 'number') {
-    const domain = data.map(entry => (_.isNumber(entry[key]) ? entry[key] : 0));
+    const domain = data.map(entry => (isFinite(_.get(entry, key)) ? parseFloat(_.get(entry, key)) : 0));
 
     return [Math.min.apply(null, domain), Math.max.apply(null, domain)];
   }
 
   return data.map(entry => {
-    const value = entry[key];
+    const value = _.get(entry, key);
 
-    return (_.isNumber(value) || _.isString(value)) ? value : '';
+    return (isFinite(value) || _.isString(value)) ? value : '';
   });
 };
 
@@ -228,6 +228,8 @@ export const getDomainOfStackGroups = (stackGroups, startIndex, endIndex) => (
  * @param  {String} type  The type of axis, number - Number Axis, category - Category Axis
  * @return {Array}        Domain
  */
+
+// VICTOR
 export const getDomainOfItemsWithSameAxis = (data, items, type) => {
   const domains = items.map(item => getDomainOfDataByKey(data, item.props.dataKey, type));
 
