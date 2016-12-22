@@ -104,7 +104,9 @@ class Bar extends Component {
       const {timestamp} = props;
       let fill = this.props.fill;
       if (hoverTimestamp && hoverTimestamp > 0 && timestamp && timestamp > 0 && timestamp !== hoverTimestamp && unactiveFill) {
-        fill = this.props.unactiveFill;
+        fill = unactiveFill;
+      } else if (props.value === undefined && props.height > 0) {
+        fill = unactiveFill;
       }
       const classes = `recharts-bar-rectangle ts-${timestamp}`;
       rectangle = <Rectangle {...props} fill={fill} className={classes} />;
