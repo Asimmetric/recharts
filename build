@@ -1,5 +1,8 @@
 #!/bin/bash
 
+npm run build-cjs
 npm run build-es6
-rm -rf ../dash/src/lib/recharts/*
-cp -a es6/* ../dash/src/lib/recharts
+rm -rf ../dash/node_modules/recharts/es6/*
+rm -rf ../dash/node_modules/recharts/lib/*
+cp -a es6/* ../dash/node_modules/recharts/es6
+cp -a lib/* ../dash/node_modules/recharts/lib
