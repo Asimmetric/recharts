@@ -8,4 +8,4 @@ deployment:
     branch: vk-circle
     commands:
       - npm run build
-      - ./release.sh
+      - sh ./release.sh

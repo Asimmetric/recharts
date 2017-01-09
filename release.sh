@@ -1,6 +1,6 @@
 COMMIT_COUNT=$(git rev-list --count master)
-echo "Creating release v0.0.$COMMIT_COUNT on recharts repo"
-RELEASE_ID=$(curl --data "{\"tag_name\": \"v0.0.$COMMIT_COUNT\", \"target_commitish\": \"master\", \"name\": \"v0.0.$COMMIT_COUNT\", \"draft\": true, \"prerelease\": false}" https://api.github.com/repos/Asimmetric/recharts/releases?access_token=$GITHUB_AUTH_TOKEN | python -c "import sys, json; print json.load(sys.stdin)['id']")
+echo "Creating release v1.0.$COMMIT_COUNT on recharts repo"
+RELEASE_ID=$(curl --data "{\"tag_name\": \"v1.0.$COMMIT_COUNT\", \"target_commitish\": \"master\", \"name\": \"v1.0.$COMMIT_COUNT\", \"draft\": true, \"prerelease\": false}" https://api.github.com/repos/Asimmetric/recharts/releases?access_token=$GITHUB_AUTH_TOKEN | python -c "import sys, json; print json.load(sys.stdin)['id']")
 echo "Creating distribution tarball"
 tar -cvzf release.tar.gz README.md package.json LICENSE umd/ lib/ es6/
 echo "Uploading tarball artifact to release"
