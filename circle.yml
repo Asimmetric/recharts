@@ -5,7 +5,7 @@ machine:
     - npm install -g npm@3.10.7
 deployment:
   release:
-    branch: vk-circle
+    branch: master
     commands:
       - npm run build
       - sh ./release.sh
