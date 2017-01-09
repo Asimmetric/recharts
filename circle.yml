@@ -8,7 +8,4 @@ deployment:
     branch: vk-circle
     commands:
       - npm run build
-      - tar -cvzf release.tar.gz README.md package.json LICENSE umd/ lib/ es6/
-      - "COMMIT_COUNT=$(git rev-list --count master)"
-      - echo $COMMIT_COUNT
-      
+      - ./release.sh
