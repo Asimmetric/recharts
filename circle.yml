@@ -3,7 +3,7 @@ machine:
     version: 6.9.3
   post:
     - npm install -g npm@3.10.7
-deploy:
+deployment:
   release:
     branch: vk-circle
     commands:
