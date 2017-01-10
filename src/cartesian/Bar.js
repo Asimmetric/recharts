@@ -104,9 +104,11 @@ class Bar extends Component {
       const {hoverTimestamp, unactiveFill} = this.props;
       const {timestamp} = props;
       let fill = this.props.fill;
-      if (unactiveFill && hoverTimestamp && hoverTimestamp > 0 && timestamp && timestamp > 0 && timestamp !== hoverTimestamp) {
-        fill = unactiveFill;
-      } else if (unactiveFill && props.value === undefined && props.height > 0) {
+      // Disabling unactiveFill hover for now 2017-01-10 as not used
+      // if (unactiveFill && hoverTimestamp && hoverTimestamp > 0 && timestamp && timestamp > 0 && timestamp !== hoverTimestamp) {
+      //   fill = unactiveFill;
+      // } else
+      if (unactiveFill && props.value === undefined && props.height > 0) {
         fill = unactiveFill;
       }
       const classes = `recharts-bar-rectangle ts-${timestamp}`;
