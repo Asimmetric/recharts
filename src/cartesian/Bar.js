@@ -78,6 +78,7 @@ class Bar extends Component {
     animationBegin: 0,
     animationDuration: 1500,
     animationEasing: 'ease',
+    unactiveFill: null,
   };
 
   state = {
@@ -103,9 +104,9 @@ class Bar extends Component {
       const {hoverTimestamp, unactiveFill} = this.props;
       const {timestamp} = props;
       let fill = this.props.fill;
-      if (hoverTimestamp && hoverTimestamp > 0 && timestamp && timestamp > 0 && timestamp !== hoverTimestamp && unactiveFill) {
+      if (unactiveFill && hoverTimestamp && hoverTimestamp > 0 && timestamp && timestamp > 0 && timestamp !== hoverTimestamp) {
         fill = unactiveFill;
-      } else if (props.value === undefined && props.height > 0) {
+      } else if (unactiveFill && props.value === undefined && props.height > 0) {
         fill = unactiveFill;
       }
       const classes = `recharts-bar-rectangle ts-${timestamp}`;
