@@ -43,6 +43,7 @@ class BarChart extends Component {
     // used internally
     isComposed: PropTypes.bool,
     animationId: PropTypes.number,
+    minNonZeroValueHeight: PropTypes.number
   };
 
   static defaultProps = {
@@ -61,8 +62,8 @@ class BarChart extends Component {
    * @return {Array} Composed data
    */
   getComposedData(item, barPosition, xAxis, yAxis, offset, stackedData) {
-    const { layout, dataStartIndex, dataEndIndex } = this.props;
-    const { dataKey, children, minPointSize, maxPointSize, barType } = item.props;
+    const { layout, dataStartIndex, dataEndIndex,  } = this.props;
+    const { dataKey, children, maxBarSize } = item.props;
     const pos = _.get(barPosition, dataKey);
     const data = this.props.data.slice(dataStartIndex, dataEndIndex + 1);
     const xTicks = getTicksOfAxis(xAxis);
@@ -80,46 +81,30 @@ class BarChart extends Component {
 
       if (layout === 'horizontal') {
         x = xTicks[index].coordinate + pos.offset;
-        y = barType === 'full' ? 0 : yAxis.scale(xAxis.orientation === 'top' ? value[0] : value[1]);
+        y = yAxis.scale(xAxis.orientation === 'top' ? value[0] : value[1]);
         width = pos.size;
-        height = barType === 'full' ? minPointSize :
-          xAxis.orientation === 'top' ?
+        height = xAxis.orientation === 'top' ?
                 yAxis.scale(value[1]) - yAxis.scale(value[0]) :
                 yAxis.scale(value[0]) - yAxis.scale(value[1]);
 
-        if (barType === 'min' && minPointSize > 0 && (!height || Math.abs(height) < minPointSize)) {
-          try {
-            y = yAxis.height + yAxis.scale.range()[1] - minPointSize;
-          } catch (e) {}
-          height = minPointSize;
-        } else if (barType !== 'full' && minPointSize > 0 && Math.abs(height) < minPointSize) {
-          const delta = Math.sign(height) * (minPointSize - Math.abs(height));
-
-          y -= delta;
-          height += delta;
-        }
-
-        if (maxPointSize > 0 && Math.abs(height) > maxPointSize) {
-          // const maxDelta = Math.sign(height) * (Math.abs(height) - maxPointSize);
-          const deltaBravo = Math.sign(height) * (Math.abs(height) - maxPointSize);
+        if (maxBarSize > 0 && Math.abs(height) > maxBarSize) {
+          const deltaBravo = Math.sign(height) * (Math.abs(height) - maxBarSize);
           y += deltaBravo;
-          height = maxPointSize;
+          height = maxBarSize;
         }
       } else {
         x = xAxis.scale(yAxis.orientation === 'left' ? value[0] : value[1]);
         y = yTicks[index].coordinate + pos.offset;
-        width = barType === 'full' ? minPointSize :
-          yAxis.orientation === 'left' ?
+        width = yAxis.orientation === 'left' ?
                 xAxis.scale(value[1]) - xAxis.scale(value[0]) :
                 xAxis.scale(value[0]) - xAxis.scale(value[1]);
         height = pos.size;
 
-        if (barType !== 'full' && minPointSize > 0 && Math.abs(width) < minPointSize) {
-           const delta = Math.sign(width) * (minPointSize - Math.abs(width));
-
-           x -= delta;
-           width += delta;
-         }
+        if (maxBarSize > 0 && Math.abs(width) > maxBarSize) {
+          const deltaBravo = Math.sign(width) * (Math.abs(width) - maxBarSize);
+          x += deltaBravo;
+          width = maxBarSize;
+        }
       }
 
       return {
@@ -285,11 +270,11 @@ class BarChart extends Component {
 
     const { layout } = this.props;
     const sizeList = this.getSizeList(stackGroups);
-    const { animationId } = this.props;
+    const { animationId, minNonZeroValueHeight } = this.props;
 
     const barPositionMap = {};
 
-    return items.map((child, i) => {
+    const barData = items.map((child, i) => {
       const { xAxisId, yAxisId } = child.props;
       const numericAxisId = layout === 'horizontal' ? yAxisId : xAxisId;
       const cateAxisId = layout === 'horizontal' ? xAxisId : yAxisId;
@@ -301,16 +286,72 @@ class BarChart extends Component {
         stackGroups[numericAxisId].hasStack &&
         getStackedDataOfItem(child, stackGroups[numericAxisId].stackGroups);
 
-      return React.cloneElement(child, {
-        key: `bar-${i}`,
-        ...filterEventAttributes(this.props),
-        layout,
-        animationId,
-        data: this.getComposedData(
-          child, barPosition, xAxisMap[xAxisId], yAxisMap[yAxisId], offset, stackedData
-        ),
-      });
+      return this.getComposedData(
+        child, barPosition, xAxisMap[xAxisId], yAxisMap[yAxisId], offset, stackedData
+      )      
     }, this);
+
+    if (minNonZeroValueHeight > 0 && barData && Array.isArray(barData[0])) {
+      barData[0].map((data, key) => {
+        let totalHeight = 0
+        let heightOfRemaining = 0
+        let rowsToChange = 0
+
+        let items = []
+        
+        for (let i=0; i< barData.length; i++) {
+          items.push(_.get(barData, `[${i}][${key}]`))
+        }
+
+        _.map(items, (item) => {
+          const itemHeight = item.height
+          
+          if (itemHeight === 0) return
+
+          totalHeight += itemHeight
+
+          if (minNonZeroValueHeight > itemHeight) {
+            rowsToChange++
+          }
+          else {
+            heightOfRemaining += itemHeight
+          }
+        })
+
+        let deltaY = 0
+
+        const orderedItems = _.orderBy(items, (item) => item.y)
+        orderedItems.reverse()
+        
+        _.map(orderedItems, (item) => {
+          const itemHeight = item.height
+          
+          if (itemHeight === 0) return
+
+          if (minNonZeroValueHeight > itemHeight) {
+            item.height = minNonZeroValueHeight
+            deltaY += minNonZeroValueHeight - itemHeight
+          } else {
+            item.height = (totalHeight - minNonZeroValueHeight * rowsToChange) / heightOfRemaining * itemHeight
+            deltaY += item.height - itemHeight
+          }
+
+          item.y -= deltaY
+        })
+      })
+    }
+
+    const bars = items.map((child, i) => {
+      return React.cloneElement(child, {
+          key: `bar-${i}`,
+          ...filterEventAttributes(this.props),
+          layout,
+          animationId,
+          data: barData[i]
+        });
+    })
+    
+    return bars;
   }
 
   render() {

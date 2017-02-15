@@ -33,8 +33,7 @@ class Bar extends Component {
       'line', 'square', 'rect', 'circle', 'cross', 'diamond', 'square', 'star',
       'triangle', 'wye',
     ]),
-    minPointSize: PropTypes.number,
-    maxPointSize: PropTypes.number,
+    maxBarSize: PropTypes.number,
 
     shape: PropTypes.oneOfType([PropTypes.func, PropTypes.element]),
     label: PropTypes.oneOfType([
@@ -70,7 +69,6 @@ class Bar extends Component {
     yAxisId: 0,
     legendType: 'rect',
     minPointSize: 0,
-    maxPointSize: 0,
     // data of bar
     data: [],
     layout: 'vertical',
