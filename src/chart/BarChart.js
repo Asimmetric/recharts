@@ -268,7 +268,7 @@ class BarChart extends Component {
   renderItems(items, xAxisMap, yAxisMap, offset, stackGroups) {
     if (!items || !items.length) { return null; }
 
-    const { layout } = this.props;
+    const { layout, height } = this.props;
     const sizeList = this.getSizeList(stackGroups);
     const { animationId, minNonZeroValueHeight } = this.props;
 
@@ -304,13 +304,17 @@ class BarChart extends Component {
         }
 
         _.map(items, (item) => {
+          totalHeight +=  item.height
+        })
+
+        const localMinNonZeroValueHeight = minNonZeroValueHeight / height * totalHeight
+
+        _.map(items, (item) => {
           const itemHeight = item.height
           
           if (itemHeight === 0) return
 
-          totalHeight += itemHeight
-
-          if (minNonZeroValueHeight > itemHeight) {
+          if (localMinNonZeroValueHeight > itemHeight) {
             rowsToChange++
           }
           else {
@@ -328,11 +332,11 @@ class BarChart extends Component {
           
           if (itemHeight === 0) return
 
-          if (minNonZeroValueHeight > itemHeight) {
-            item.height = minNonZeroValueHeight
-            deltaY += minNonZeroValueHeight - itemHeight
+          if (localMinNonZeroValueHeight > itemHeight) {
+            item.height = localMinNonZeroValueHeight
+            deltaY += localMinNonZeroValueHeight - itemHeight
           } else {
-            item.height = (totalHeight - minNonZeroValueHeight * rowsToChange) / heightOfRemaining * itemHeight
+            item.height = (totalHeight - localMinNonZeroValueHeight * rowsToChange) / heightOfRemaining * itemHeight
             deltaY += item.height - itemHeight
           }
 
