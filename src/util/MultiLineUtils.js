@@ -45,12 +45,25 @@ export const getComposedData = (chartProps, type, xAxis, yAxis, dataKey,
         xTicks[i].coordinate + bandSize / 2 :
         xAxis.scale(_.get(dataPoint, dataKey, null)),
       y: layout === 'horizontal' ?
-        yPoint === null || (i === endIndex && prevYPointWasNull) ? bottomOfGraph : yAxis.scale(yPoint) :
+        yAxis.scale(yPoint) :
         yTicks[i].coordinate + bandSize / 2,
       value: value,
       nullVals: yPoint === null
     });
   }
+
+  const lastItem = data[data.length - 1]
+  data.push({
+    x: layout === 'horizontal' ?
+      lastItem.x + bandSize :
+      lastItem.x,
+    y: layout === 'horizontal' ?
+      lastItem.y :
+      lastItem.y + bandSize,
+    value: lastItem.value,
+    nullVals: lastItem.nullVals
+  });
+
   return data;
 };
 
@@ -137,9 +150,9 @@ const findDataSegmentsByRegion = (lineProps, data, dataKey) => {
     } else if (currentRegion !== dataSegment) {
       if (previousRegionValue !== null) {
         const stroke = findStroke(lineProps, currentRegion, dataSegments.length, previousItem);
-        dataSegments.push({ start, end: i, regionValue: previousRegionValue, stroke });
+        dataSegments.push({ start, end: i - 1, regionValue: previousRegionValue, stroke });
       } else {
-        dataSegments.push({ start, end: i, regionValue: previousRegionValue, stroke: null });
+        dataSegments.push({ start, end: i - 1, regionValue: previousRegionValue, stroke: null });
       }
 
       currentRegion = dataSegment;
@@ -172,13 +185,13 @@ const findDataSegmentsNormal = (lineProps, data, dataKey) => {
     if (i === 0) {
       previousDataItem = dataItem;
     } else if (i === (data.length - 1)) {
-      dataSegments.push({ start, end: i, stroke: previousDataItem !== null ? stroke : null });
+      dataSegments.push({ start, end: i - 1, stroke: previousDataItem !== null ? stroke : null });
     } else if (dataItem === null && previousDataItem !== null) { // end of line with values
-      dataSegments.push({ start, end: i, stroke });
+      dataSegments.push({ start, end: i - 1, stroke });
       previousDataItem = null;
       start = i;
     } else if (dataItem !== null && previousDataItem === null) { // end of line without values
-      dataSegments.push({ start, end: i, stroke: null });
+      dataSegments.push({ start, end: i - 1, stroke: null });
       previousDataItem = dataItem;
       start = i;
     }
@@ -247,12 +260,12 @@ const findDataSegmentsByThreshold = (lineProps, data, dataKey) => {
           // Is a value Line
           dataSegments.push({
             start,
-            end: i,
+            end: i - 1,
             stroke: thresholdColor(currentThreshold)
           });
         } else {
           // Is a null Line
-          dataSegments.push({ start, end: i, stroke: null});
+          dataSegments.push({ start, end: i - 1, stroke: null});
         }
 
         // New Segment
