@@ -44,7 +44,7 @@ All the components of Recharts is clearly separated. The lineChart is composed b
 We'd love :heart: to hear what you think we should build. Please create a issue to write your usage or ideas.
 
 We are looking for like-minded people who share the same idea about Recharts. The goal of this project is create a more flexible charting library for the  React community.
-
+.
 ## License
 
 [MIT](http://opensource.org/licenses/MIT)
