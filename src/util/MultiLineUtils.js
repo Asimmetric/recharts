@@ -35,10 +35,7 @@ export const getComposedData = (chartProps, type, xAxis, yAxis, dataKey,
     const value = _.get(dataPoint, dataKey, null)
     const extend = i === endIndex && startIndex !== endIndex && (type === 'stepAfter' || value === null)
     const yDataPoint = extend ? chartProps.data[i - 1] : chartProps.data[i];
-
-    const prevYPointWasNull = i === startIndex ||  _.get(chartProps.data[i - 1], dataKey, null) === null
     const yPoint = regionValue !== null ? regionValue : _.get(yDataPoint, dataKey, null);
-    const bottomOfGraph = yAxis.scale && yAxis.scale.range && yAxis.scale.range() && yAxis.scale.range()[0]
 
     data.push({
       x: layout === 'horizontal' ?
