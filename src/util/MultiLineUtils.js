@@ -49,17 +49,19 @@ export const getComposedData = (chartProps, type, xAxis, yAxis, dataKey,
     });
   }
 
-  const lastItem = data[data.length - 1]
-  data.push({
-    x: layout === 'horizontal' ?
-      lastItem.x + bandSize :
-      lastItem.x,
-    y: layout === 'horizontal' ?
-      lastItem.y :
-      lastItem.y + bandSize,
-    value: lastItem.value,
-    nullVals: lastItem.nullVals
-  });
+  if (endIndex < dataEndIndex) {
+    const lastItem = data[data.length - 1]
+    data.push({
+      x: layout === 'horizontal' ?
+        lastItem.x + bandSize :
+        lastItem.x,
+      y: layout === 'horizontal' ?
+        lastItem.y :
+        lastItem.y + bandSize,
+      value: lastItem.value,
+      nullVals: lastItem.nullVals
+    });
+  }
 
   return data;
 };
