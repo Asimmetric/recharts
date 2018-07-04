@@ -185,7 +185,7 @@ const findDataSegmentsNormal = (lineProps, data, dataKey) => {
     if (i === 0) {
       previousDataItem = dataItem;
     } else if (i === (data.length - 1)) {
-      dataSegments.push({ start, end: i - 1, stroke: previousDataItem !== null ? stroke : null });
+      dataSegments.push({ start, end: i, stroke: previousDataItem !== null ? stroke : null });
     } else if (dataItem === null && previousDataItem !== null) { // end of line with values
       dataSegments.push({ start, end: i - 1, stroke });
       previousDataItem = null;
